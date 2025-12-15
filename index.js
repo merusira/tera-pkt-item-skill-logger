@@ -394,7 +394,7 @@ module.exports = function PacketLogger(mod) {
     try {
         // Register and hook C_EQUIP_ITEM
         registerHookedPacket('C_EQUIP_ITEM');
-        mod.hook('C_EQUIP_ITEM', mod.dispatch.protocolVersion.C_EQUIP_ITEM || 3, { order: 1000, filter: { fake: null } }, event => {
+        mod.hook('C_EQUIP_ITEM', mod.dispatch.protocolVersion.C_EQUIP_ITEM || 1, { order: 1000, filter: { fake: null } }, event => {
             const fakeStatus = event.fake ? 'FAKE' : 'REAL';
             debugLog(`Received ${fakeStatus} C_EQUIP_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
             
@@ -416,7 +416,7 @@ module.exports = function PacketLogger(mod) {
                 // Log to game chat
                 if (mod.settings.logEquipmentToGame) {
                     try {
-                        command.message(`${fakeStatus} C_EQUIP_ITEM: ${itemName} (ID: ${event.id}) to slot ${event.slot}`);
+                        command.message(`${fakeStatus} C_EQUIP_ITEM: ${itemName} (ID: ${event.id}) to slot ${event.slot} | GameID: ${event.gameId} | Unk: ${event.unk}`);
                     } catch (e) {
                         mod.error(`Failed to log equipment to chat: ${e.message}`);
                     }
@@ -425,7 +425,7 @@ module.exports = function PacketLogger(mod) {
                 // Log to file
                 if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
                     const timestamp = new Date().toISOString();
-                    itemSkillLogStream.write(`${timestamp} | C_EQUIP_ITEM | ID: ${event.id} | Name: ${itemName} | Slot: ${event.slot}\n`);
+                    itemSkillLogStream.write(`${timestamp} | C_EQUIP_ITEM | ID: ${event.id} | Name: ${itemName} | Slot: ${event.slot} | GameID: ${event.gameId} | Unk: ${event.unk}\n`);
                 }
             }
             return true;
