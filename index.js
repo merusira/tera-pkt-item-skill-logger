@@ -164,7 +164,7 @@ module.exports = function PacketLogger(mod) {
             if (mod.settings.logItemSkillToGame) {
                 try {
                     debugLog(`Attempting to log ${fakeStatus} item to chat: ${itemName} (ID: ${event.id})`);
-                    command.message(`${fakeStatus} C_USE_ITEM: ${itemName} (ID: ${event.id})`);
+                    command.message(`${fakeStatus} C_USE_ITEM: ${itemName} (ID: ${event.id}, GameID: ${event.gameId}, DBID: ${event.dbid})`);
                     debugLog('Successfully logged item to chat');
                 } catch (e) {
                     mod.error(`Failed to log item to chat: ${e.message}`);
@@ -174,7 +174,7 @@ module.exports = function PacketLogger(mod) {
             // Log to file
             if (mod.settings.logItemSkillToFile && itemSkillLogStream) {
                 const timestamp = new Date().toISOString();
-                itemSkillLogStream.write(`${timestamp} | C_USE_ITEM | ID: ${event.id} | Name: ${itemName}\n`);
+                itemSkillLogStream.write(`${timestamp} | C_USE_ITEM | ID: ${event.id} | Name: ${itemName} | GameID: ${event.gameId} | DBID: ${event.dbid}\n`);
             }
         }
         return true;
@@ -574,7 +574,7 @@ module.exports = function PacketLogger(mod) {
             // Log to game chat
             if (mod.settings.logEquipmentToGame) {
                 try {
-                    command.message(`${fakeStatus} S_EQUIP_ITEM: ${itemName} (ID: ${event.id}) equipped by ${event.gameId}`);
+                    command.message(`${fakeStatus} S_EQUIP_ITEM: ${itemName} (ID: ${event.id}) equipped by CID: ${event.cid}, ItemID: ${event.itemid}`);
                 } catch (e) {
                     mod.error(`Failed to log equipment to chat: ${e.message}`);
                 }
@@ -583,7 +583,7 @@ module.exports = function PacketLogger(mod) {
             // Log to file
             if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
                 const timestamp = new Date().toISOString();
-                itemSkillLogStream.write(`${timestamp} | S_EQUIP_ITEM | ID: ${event.id} | Name: ${itemName} | GameId: ${event.gameId}\n`);
+                itemSkillLogStream.write(`${timestamp} | S_EQUIP_ITEM | ID: ${event.id} | Name: ${itemName} | CID: ${event.cid} | ItemID: ${event.itemid}\n`);
             }
         }
         return true;
