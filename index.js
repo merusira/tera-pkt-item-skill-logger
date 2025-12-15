@@ -589,6 +589,45 @@ module.exports = function PacketLogger(mod) {
         return true;
     });
     
+    // S_UNEQUIP_ITEM - Server confirming item unequip
+    // Register and hook S_UNEQUIP_ITEM
+    registerHookedPacket('S_UNEQUIP_ITEM');
+    mod.hook('S_UNEQUIP_ITEM', 2, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_UNEQUIP_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.id);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.id}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_UNEQUIP_ITEM: ${itemName} (ID: ${event.id}) unequipped | GameId: ${event.gameId} | ItemId: ${event.itemId}`);
+                } catch (e) {
+                    mod.error(`Failed to log equipment unequip to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_UNEQUIP_ITEM | ID: ${event.id} | Name: ${itemName} | GameId: ${event.gameId} | ItemId: ${event.itemId}\n`);
+            }
+        }
+        return true;
+    });
+    
     // S_EQUIP_SERVANT_ITEM - Server confirming servant item equip
     try {
         // Register and hook S_EQUIP_SERVANT_ITEM
