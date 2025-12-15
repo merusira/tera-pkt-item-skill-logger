@@ -9,6 +9,7 @@ const DefaultSettings = {
     "logItemSkillToFile": true,  // Whether to log item and skill usage to file
     "logEquipmentToGame": true,  // Whether to log equipment-related packets to in-game text
     "logEquipmentToFile": true,  // Whether to log equipment-related packets to file
+    "logOnlyHookedPackets": true, // Whether to log only specifically hooked packets
     "debug": false               // Whether to enable debug logging
 }
 

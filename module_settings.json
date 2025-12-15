@@ -9,6 +9,7 @@
         "logItemSkillToFile": true,
         "logEquipmentToGame": true,
         "logEquipmentToFile": true,
+		"logOnlyHookedPackets": true,
         "debug": false
     }
 }
