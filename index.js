@@ -394,7 +394,7 @@ module.exports = function PacketLogger(mod) {
     try {
         // Register and hook C_EQUIP_ITEM
         registerHookedPacket('C_EQUIP_ITEM');
-        mod.hook('C_EQUIP_ITEM', mod.dispatch.protocolVersion.C_EQUIP_ITEM || 1, { order: 1000, filter: { fake: null } }, event => {
+        mod.hook('C_EQUIP_ITEM', mod.dispatch.protocolVersion.C_EQUIP_ITEM || 2, { order: 1000, filter: { fake: null } }, event => {
             const fakeStatus = event.fake ? 'FAKE' : 'REAL';
             debugLog(`Received ${fakeStatus} C_EQUIP_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
             
