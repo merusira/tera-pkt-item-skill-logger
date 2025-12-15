@@ -356,6 +356,682 @@ mod.hook('C_USE_ITEM', 3, { order: 1000, filter: { fake: null } }, event => {
         return true;
     });
 
+    // --- Equipment-related Packet Hooks ---
+    
+    // C_EQUIP_ITEM - Client equipping an item
+    mod.hook('C_EQUIP_ITEM', 3, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} C_EQUIP_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Item";
+            try {
+                // Try to get item data from game state
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.id);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.id}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} C_EQUIP_ITEM: ${itemName} (ID: ${event.id}) to slot ${event.slot}`);
+                } catch (e) {
+                    mod.error(`Failed to log equipment to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | C_EQUIP_ITEM | ID: ${event.id} | Name: ${itemName} | Slot: ${event.slot}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // C_EQUIP_SERVANT_ITEM - Client equipping an item on a servant
+    mod.hook('C_EQUIP_SERVANT_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} C_EQUIP_SERVANT_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.itemId);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.itemId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} C_EQUIP_SERVANT_ITEM: ${itemName} (ID: ${event.itemId}) on servant ${event.servantId}`);
+                } catch (e) {
+                    mod.error(`Failed to log servant equipment to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | C_EQUIP_SERVANT_ITEM | ID: ${event.itemId} | Name: ${itemName} | ServantId: ${event.servantId}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // C_PET_EQUIP - Client equipping an item on a pet
+    mod.hook('C_PET_EQUIP', 3, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} C_PET_EQUIP packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.itemId);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.itemId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} C_PET_EQUIP: ${itemName} (ID: ${event.itemId}) on pet ${event.petId}`);
+                } catch (e) {
+                    mod.error(`Failed to log pet equipment to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | C_PET_EQUIP | ID: ${event.itemId} | Name: ${itemName} | PetId: ${event.petId}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // C_REQUEST_EQUIPMENT_INHERITANCE - Client requesting equipment inheritance
+    mod.hook('C_REQUEST_EQUIPMENT_INHERITANCE', 2, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} C_REQUEST_EQUIPMENT_INHERITANCE packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} C_REQUEST_EQUIPMENT_INHERITANCE: Source item (${event.sourceItemUid}) to Target item (${event.targetItemUid})`);
+                } catch (e) {
+                    mod.error(`Failed to log equipment inheritance to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | C_REQUEST_EQUIPMENT_INHERITANCE | Source: ${event.sourceItemUid} | Target: ${event.targetItemUid}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_EQUIP_ITEM - Server confirming item equip
+    mod.hook('S_EQUIP_ITEM', 6, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_EQUIP_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.id);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.id}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_EQUIP_ITEM: ${itemName} (ID: ${event.id}) equipped by ${event.gameId}`);
+                } catch (e) {
+                    mod.error(`Failed to log equipment to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_EQUIP_ITEM | ID: ${event.id} | Name: ${itemName} | GameId: ${event.gameId}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_EQUIP_SERVANT_ITEM - Server confirming servant item equip
+    mod.hook('S_EQUIP_SERVANT_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_EQUIP_SERVANT_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.itemId);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.itemId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_EQUIP_SERVANT_ITEM: ${itemName} (ID: ${event.itemId}) on servant ${event.servantId}`);
+                } catch (e) {
+                    mod.error(`Failed to log servant equipment to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_EQUIP_SERVANT_ITEM | ID: ${event.itemId} | Name: ${itemName} | ServantId: ${event.servantId}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_USER_ITEM_EQUIP_CHANGER - Server notifying about item equip change
+    mod.hook('S_USER_ITEM_EQUIP_CHANGER', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_USER_ITEM_EQUIP_CHANGER packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_USER_ITEM_EQUIP_CHANGER: User ${event.gameId} changed equipment`);
+                } catch (e) {
+                    mod.error(`Failed to log equipment change to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_USER_ITEM_EQUIP_CHANGER | GameId: ${event.gameId}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // --- Additional Skill-related Packet Hooks ---
+    
+    // S_EACH_SKILL_RESULT - Server reporting skill result
+    mod.hook('S_EACH_SKILL_RESULT', 14, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_EACH_SKILL_RESULT packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logItemSkillToGame || mod.settings.logItemSkillToFile) {
+            // Parse skill ID to get base skill
+            const skillId = event.skill.id;
+            const skillBaseId = Math.floor((skillId - 0x4000000) / 10000);
+            
+            // Get skill name if possible
+            let skillName = "Unknown Skill Result";
+            try {
+                skillName = `Skill Result ${skillBaseId}`;
+            } catch (e) {
+                mod.warn(`Failed to get skill name for ID ${skillId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logItemSkillToGame) {
+                try {
+                    command.message(`${fakeStatus} S_EACH_SKILL_RESULT: ${skillName} (ID: ${skillId}) from ${event.source} to ${event.target}`);
+                } catch (e) {
+                    mod.error(`Failed to log skill result to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logItemSkillToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_EACH_SKILL_RESULT | ID: ${skillId} | Base ID: ${skillBaseId} | Name: ${skillName} | Source: ${event.source} | Target: ${event.target}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_ACTION_END - Server reporting skill action end
+    mod.hook('S_ACTION_END', 5, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_ACTION_END packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logItemSkillToGame || mod.settings.logItemSkillToFile) {
+            // Parse skill ID to get base skill
+            const skillId = event.skill.id;
+            const skillBaseId = Math.floor((skillId - 0x4000000) / 10000);
+            
+            // Get skill name if possible
+            let skillName = "Unknown Action End";
+            try {
+                skillName = `Action End ${skillBaseId}`;
+            } catch (e) {
+                mod.warn(`Failed to get skill name for ID ${skillId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logItemSkillToGame) {
+                try {
+                    command.message(`${fakeStatus} S_ACTION_END: ${skillName} (ID: ${skillId}) by ${event.gameId}`);
+                } catch (e) {
+                    mod.error(`Failed to log action end to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logItemSkillToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_ACTION_END | ID: ${skillId} | Base ID: ${skillBaseId} | Name: ${skillName} | GameId: ${event.gameId}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_ACTION_STAGE - Server reporting skill action stage
+    mod.hook('S_ACTION_STAGE', 9, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_ACTION_STAGE packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logItemSkillToGame || mod.settings.logItemSkillToFile) {
+            // Parse skill ID to get base skill
+            const skillId = event.skill.id;
+            const skillBaseId = Math.floor((skillId - 0x4000000) / 10000);
+            
+            // Get skill name if possible
+            let skillName = "Unknown Action Stage";
+            try {
+                skillName = `Action Stage ${skillBaseId}`;
+            } catch (e) {
+                mod.warn(`Failed to get skill name for ID ${skillId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logItemSkillToGame) {
+                try {
+                    command.message(`${fakeStatus} S_ACTION_STAGE: ${skillName} (ID: ${skillId}) by ${event.gameId} stage ${event.stage}`);
+                } catch (e) {
+                    mod.error(`Failed to log action stage to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logItemSkillToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_ACTION_STAGE | ID: ${skillId} | Base ID: ${skillBaseId} | Name: ${skillName} | GameId: ${event.gameId} | Stage: ${event.stage}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_START_COOLTIME_SKILL - Server reporting skill cooldown start
+    mod.hook('S_START_COOLTIME_SKILL', 3, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_START_COOLTIME_SKILL packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logItemSkillToGame || mod.settings.logItemSkillToFile) {
+            // Parse skill ID to get base skill
+            const skillId = event.skill.id;
+            const skillBaseId = Math.floor((skillId - 0x4000000) / 10000);
+            
+            // Get skill name if possible
+            let skillName = "Unknown Skill Cooldown";
+            try {
+                skillName = `Skill Cooldown ${skillBaseId}`;
+            } catch (e) {
+                mod.warn(`Failed to get skill name for ID ${skillId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logItemSkillToGame) {
+                try {
+                    command.message(`${fakeStatus} S_START_COOLTIME_SKILL: ${skillName} (ID: ${skillId}) cooldown: ${event.cooldown}ms`);
+                } catch (e) {
+                    mod.error(`Failed to log skill cooldown to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logItemSkillToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_START_COOLTIME_SKILL | ID: ${skillId} | Base ID: ${skillBaseId} | Name: ${skillName} | Cooldown: ${event.cooldown}ms\n`);
+            }
+        }
+        return true;
+    });
+    
+    // --- Additional Equipment-related Packet Hooks ---
+    
+    // S_OBTAIN_TOKEN_ITEM - Server reporting token item obtained
+    mod.hook('S_OBTAIN_TOKEN_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_OBTAIN_TOKEN_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Token Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.itemId);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.itemId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_OBTAIN_TOKEN_ITEM: ${itemName} (ID: ${event.itemId}) amount: ${event.amount}`);
+                } catch (e) {
+                    mod.error(`Failed to log token item to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_OBTAIN_TOKEN_ITEM | ID: ${event.itemId} | Name: ${itemName} | Amount: ${event.amount}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_PREVIEW_ITEM - Server sending item preview
+    mod.hook('S_PREVIEW_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_PREVIEW_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_PREVIEW_ITEM: Preview item data received`);
+                } catch (e) {
+                    mod.error(`Failed to log item preview to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_PREVIEW_ITEM | Preview data received\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_RECEIVE_TOKEN_TARGET_ITEM - Server reporting token target item received
+    mod.hook('S_RECEIVE_TOKEN_TARGET_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_RECEIVE_TOKEN_TARGET_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Token Target Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.itemId);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.itemId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_RECEIVE_TOKEN_TARGET_ITEM: ${itemName} (ID: ${event.itemId})`);
+                } catch (e) {
+                    mod.error(`Failed to log token target item to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_RECEIVE_TOKEN_TARGET_ITEM | ID: ${event.itemId} | Name: ${itemName}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_RESULT_COMBINE_ITEM - Server reporting item combination result
+    mod.hook('S_RESULT_COMBINE_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_RESULT_COMBINE_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_RESULT_COMBINE_ITEM: Item combination result: ${event.success ? 'Success' : 'Failed'}`);
+                } catch (e) {
+                    mod.error(`Failed to log item combination result to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_RESULT_COMBINE_ITEM | Success: ${event.success}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_RESULT_REPAIR_ITEM - Server reporting item repair result
+    mod.hook('S_RESULT_REPAIR_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_RESULT_REPAIR_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_RESULT_REPAIR_ITEM: Item repair result received`);
+                } catch (e) {
+                    mod.error(`Failed to log item repair result to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_RESULT_REPAIR_ITEM | Repair result received\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_SEND_QUEST_ITEM_INFO - Server sending quest item info
+    mod.hook('S_SEND_QUEST_ITEM_INFO', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_SEND_QUEST_ITEM_INFO packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_SEND_QUEST_ITEM_INFO: Quest item info received`);
+                } catch (e) {
+                    mod.error(`Failed to log quest item info to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_SEND_QUEST_ITEM_INFO | Quest item info received\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_SET_SEND_PARCEL_ITEM - Server setting parcel item
+    mod.hook('S_SET_SEND_PARCEL_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_SET_SEND_PARCEL_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_SET_SEND_PARCEL_ITEM: Parcel item set`);
+                } catch (e) {
+                    mod.error(`Failed to log parcel item to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_SET_SEND_PARCEL_ITEM | Parcel item set\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_SHOW_TRADE_ITEM - Server showing trade item
+    mod.hook('S_SHOW_TRADE_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_SHOW_TRADE_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Trade Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.itemId);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.itemId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_SHOW_TRADE_ITEM: ${itemName} (ID: ${event.itemId})`);
+                } catch (e) {
+                    mod.error(`Failed to log trade item to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_SHOW_TRADE_ITEM | ID: ${event.itemId} | Name: ${itemName}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_USE_RIGHT_ITEM - Server using right item
+    mod.hook('S_USE_RIGHT_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_USE_RIGHT_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_USE_RIGHT_ITEM: User ${event.gameId} used right item`);
+                } catch (e) {
+                    mod.error(`Failed to log right item use to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_USE_RIGHT_ITEM | GameId: ${event.gameId}\n`);
+            }
+        }
+        return true;
+    });
+    
+    // S_START_COOLTIME_ITEM - Server reporting item cooldown start
+    mod.hook('S_START_COOLTIME_ITEM', 1, { order: 1000, filter: { fake: null } }, event => {
+        const fakeStatus = event.fake ? 'FAKE' : 'REAL';
+        debugLog(`Received ${fakeStatus} S_START_COOLTIME_ITEM packet: ${JSON.stringify(event, bigIntReplacer)}`);
+        
+        if (mod.settings.logEquipmentToGame || mod.settings.logEquipmentToFile) {
+            // Get item name if possible
+            let itemName = "Unknown Item";
+            try {
+                if (mod.game.data && mod.game.data.items) {
+                    const item = mod.game.data.items.get(event.itemId);
+                    if (item && item.name) {
+                        itemName = item.name;
+                    }
+                }
+            } catch (e) {
+                mod.warn(`Failed to get item name for ID ${event.itemId}: ${e.message}`);
+            }
+
+            // Log to game chat
+            if (mod.settings.logEquipmentToGame) {
+                try {
+                    command.message(`${fakeStatus} S_START_COOLTIME_ITEM: ${itemName} (ID: ${event.itemId}) cooldown: ${event.cooldown}ms`);
+                } catch (e) {
+                    mod.error(`Failed to log item cooldown to chat: ${e.message}`);
+                }
+            }
+            
+            // Log to file
+            if (mod.settings.logEquipmentToFile && itemSkillLogStream) {
+                const timestamp = new Date().toISOString();
+                itemSkillLogStream.write(`${timestamp} | S_START_COOLTIME_ITEM | ID: ${event.itemId} | Name: ${itemName} | Cooldown: ${event.cooldown}ms\n`);
+            }
+        }
+        return true;
+    });
+
     // --- Command Definition ---
     command.add('pktlog', (filterArg) => {
         if (filterArg && filterArg.trim().length > 0) {
@@ -416,6 +1092,16 @@ mod.hook('C_USE_ITEM', 3, { order: 1000, filter: { fake: null } }, event => {
         mod.settings.debug = !mod.settings.debug;
         command.message(`Debug logging ${mod.settings.debug ? 'enabled' : 'disabled'}.`);
     });
+    
+    command.add('equipgame', () => {
+        mod.settings.logEquipmentToGame = !mod.settings.logEquipmentToGame;
+        command.message(`Logging equipment to in-game text ${mod.settings.logEquipmentToGame ? 'enabled' : 'disabled'}.`);
+    });
+    
+    command.add('equipfile', () => {
+        mod.settings.logEquipmentToFile = !mod.settings.logEquipmentToFile;
+        command.message(`Logging equipment to file ${mod.settings.logEquipmentToFile ? 'enabled' : 'disabled'}.`);
+    });
 
     // --- Cleanup ---
     this.destructor = () => {
@@ -433,7 +1119,8 @@ mod.hook('C_USE_ITEM', 3, { order: 1000, filter: { fake: null } }, event => {
         command.remove('pktlogfile');
         command.remove('itemskillgame');
         command.remove('itemskillfile');
-        command.remove('pktdebug');
+        command.remove('equipgame');
+        command.remove('equipfile');
         command.remove('pktdebug');
     };
 };
